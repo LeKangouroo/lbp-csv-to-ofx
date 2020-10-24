@@ -48,8 +48,9 @@ def get_ofx_body(data: Data):
     for t in data.transactions:
         _t_id = get_hash(f"{t.date}-{t.memo}-{t.amount}")
         _transactions.append(STMTTRN(dtposted=t.date, fitid=_t_id, memo=t.memo, trnamt=t.amount, trntype="POS"))
-    # TODO: retrieve proper dates
-    _bank_transactions = BANKTRANLIST(*_transactions, dtstart=_a.balance_date, dtend=_a.balance_date)
+    _first_transaction_date = data.transactions[len(data.transactions) - 1].date
+    _last_transaction_date = data.transactions[0].date
+    _bank_transactions = BANKTRANLIST(*_transactions, dtstart=_first_transaction_date, dtend=_last_transaction_date)
     _currency = get_ofx_account_currency(_a)
     _statement_res = STMTRS(
         curdef=_currency,
@@ -72,7 +73,7 @@ def parse_amount(amount: str):
     return Decimal(amount.replace(" ", "").replace(",", "."))
 
 
-def parse_date(date_str: str, date_format: str = "%d/%m/%Y", tz: str = "Europe/Paris"):
+def parse_date(date_str: str, date_format: str = "%d/%m/%Y", tz: str = "UTC"):
     _date = datetime.strptime(date_str, date_format)
     _timezone = timezone(tz)
     return _timezone.localize(_date)
