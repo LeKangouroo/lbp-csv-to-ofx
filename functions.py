@@ -1,4 +1,5 @@
 import csv
+import ofxtools.models
 
 
 def parse_csv(path, fieldnames, offset):
@@ -10,3 +11,8 @@ def parse_csv(path, fieldnames, offset):
                 continue
             _output.append(_row)
     return _output
+
+
+def convert_csv_to_ofx(path, fieldnames, offset):
+    _csv = parse_csv(path=path, fieldnames=fieldnames, offset=offset)
+
