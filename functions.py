@@ -1,16 +1,25 @@
 import uuid
-
 from csv import reader
 from datetime import datetime
 from decimal import Decimal
 from hashlib import sha256
-from models.Account import Account
-from models.Data import Data
-from models.Transaction import Transaction
+from xml.etree import ElementTree
+
+from ofxtools.header import make_header
 from ofxtools.models import *
 from ofxtools.utils import UTC
 from pytz import timezone
-from xml.etree import ElementTree
+
+from models.Account import Account
+from models.Data import Data
+from models.Transaction import Transaction
+
+
+def convert_csv_to_ofx(path: str):
+    _data = parse_csv(path=path)
+    _body = serialize_ofx(get_ofx_body(_data))
+    _header = get_ofx_header()
+    return _header + _body
 
 
 def get_hash(string: str):
@@ -40,7 +49,7 @@ def get_ofx_body(data: Data):
         _t_id = get_hash(f"{t.date}-{t.memo}-{t.amount}")
         _transactions.append(STMTTRN(dtposted=t.date, fitid=_t_id, memo=t.memo, trnamt=t.amount, trntype="POS"))
     # TODO: retrieve proper dates
-    _bank_transactions = BANKTRANLIST(_transactions, dtstart=_a.balance_date, dtend=_a.balance_date)
+    _bank_transactions = BANKTRANLIST(*_transactions, dtstart=_a.balance_date, dtend=_a.balance_date)
     _currency = get_ofx_account_currency(_a)
     _statement_res = STMTRS(
         curdef=_currency,
@@ -53,6 +62,10 @@ def get_ofx_body(data: Data):
     _sign_on_res = SONRS(status=_status, dtserver=datetime.now(tz=UTC), language="FRA")
     _sig_on_msg_res = SIGNONMSGSRSV1(sonrs=_sign_on_res)
     return OFX(signonmsgsrsv1=_sig_on_msg_res, bankmsgsrsv1=_bank_msg_res)
+
+
+def get_ofx_header():
+    return str(make_header(version=220))
 
 
 def parse_amount(amount: str):
@@ -100,11 +113,6 @@ def parse_csv(path: str):
         balance_francs=_account_balance_francs)
     _data = Data(account=_account, transactions=_transactions)
     return _data
-
-
-def convert_csv_to_ofx(path: str):
-    _data = parse_csv(path=path)
-    return get_ofx_body(_data)
 
 
 def serialize_ofx(ofx_obj: OFX):
