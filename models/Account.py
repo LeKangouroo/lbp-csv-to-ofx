@@ -9,5 +9,5 @@ class Account:
     type: str
     currency: str
     balance_date: datetime
-    balance_euros: Decimal
+    balance: Decimal
     balance_francs: Decimal

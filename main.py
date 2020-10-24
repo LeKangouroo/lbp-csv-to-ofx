@@ -9,4 +9,4 @@ if len(argv) < 2:
 ofx = serialize_ofx(convert_csv_to_ofx(path=argv[1]))
 print(ofx)
 # for row in csv_data:
-#     print(f'{row["date"]} | {row["memo"]} | {row["amount_euros"]}')
+#     print(f'{row["date"]} | {row["memo"]} | {row["amount"]}')
