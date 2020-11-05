@@ -79,10 +79,10 @@ def parse_date(date_str: str, date_format: str = "%d/%m/%Y", tz: str = "UTC"):
     return _timezone.localize(_date)
 
 
-def parse_csv(path: str):
+def parse_csv(path: str, encoding="windows-1252"):
     _transactions = []
     _offset = 8
-    with open(path, newline="") as csv_file:
+    with open(path, encoding=encoding, newline="") as csv_file:
         _reader = reader(csv_file, delimiter=";", quotechar='"')
         for _row in _reader:
             _line = _reader.line_num
